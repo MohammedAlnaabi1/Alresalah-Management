@@ -12,14 +12,10 @@ class Expense extends Model
     protected $table = 'expenses'; // اسم الجدول
 
     protected $fillable = [
-        'category',        // نوع المصروف
-        'amount',          // المبلغ
-        'payment_method',  // طريقة الدفع
-        'date',            // التاريخ
-        'notes',           // الملاحظات
-        'related_bus_id',  // رقم الحافلة
-        'attachment',      // الفاتورة
-    ];
+    'category', 'payment_method', 'amount', 'date',
+    'related_bus_id', 'notes', 'status', 'attachment'
+];
+
 
     // 🔹 ربط المصروف بالحافلة (علاقة اختيارية)
     public function bus()

@@ -12,35 +12,37 @@ class BusDashboardController extends Controller
     public function index()
     {
         // ==================================================
-        // 🔹 الإحصاءات الأساسية
+        // 🔹 الإحصاءات الأساسية (المعتمدة فقط)
         // ==================================================
         $totalBuses        = Bus::count();
         $activeBuses       = Bus::where('status', 'نشطة')->count();
         $maintenanceBuses  = Bus::where('status', 'قيد الصيانة')->count();
-        $totalExpenses     = BusExpense::sum('amount') ?? 0;
+        $totalExpenses     = BusExpense::where('status', 'approved')->sum('amount') ?? 0;
 
         // ==================================================
-        // 🔹 صرفية الوقود الشهرية
+        // 🔹 صرفية الوقود الشهرية (المعتمدة فقط)
         // ==================================================
         $monthlyFuelExpense = BusExpense::where('expense_type', 'وقود')
+            ->where('status', 'approved')
             ->whereMonth('expense_date', Carbon::now()->month)
             ->whereYear('expense_date', Carbon::now()->year)
             ->sum('amount') ?? 0;
 
         // ==================================================
-        // 🔹 الصيانة السنوية
+        // 🔹 الصيانة السنوية (المعتمدة فقط)
         // ==================================================
-            $yearlyMaintenanceExpense = BusExpense::where('expense_type', 'صيانة')
-    ->whereYear('expense_date', now()->year)
-    ->sum('amount') ?? 0;
-
+        $yearlyMaintenanceExpense = BusExpense::where('expense_type', 'صيانة')
+            ->where('status', 'approved')
+            ->whereYear('expense_date', now()->year)
+            ->sum('amount') ?? 0;
 
         // ==================================================
-        // 🔹 آخر الحافلات والمصروفات
+        // 🔹 آخر الحافلات والمصروفات (جميعها للعرض فقط)
         // ==================================================
         $latestBuses = Bus::latest()->take(5)->get();
 
         $latestExpenses = BusExpense::with('bus')
+            ->where('status', 'approved')
             ->orderBy('expense_date', 'desc')
             ->take(5)
             ->get();
@@ -48,7 +50,8 @@ class BusDashboardController extends Controller
         // ==================================================
         // 🔹 تجميع المصروفات السنوية (للرسوم البيانية)
         // ==================================================
-        $yearlyExpenses = BusExpense::selectRaw('YEAR(expense_date) as year, SUM(amount) as total')
+        $yearlyExpenses = BusExpense::where('status', 'approved')
+            ->selectRaw('YEAR(expense_date) as year, SUM(amount) as total')
             ->groupBy('year')
             ->orderBy('year', 'asc')
             ->get();
@@ -77,8 +80,6 @@ class BusDashboardController extends Controller
             'chartTotals',
             'monthlyFuelExpense',
             'yearlyMaintenanceExpense'
-
-             // ✅ تمت إضافته هنا
         ));
     }
 }

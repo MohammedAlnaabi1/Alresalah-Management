@@ -12,6 +12,9 @@
   <?php if(session('success')): ?>
     <div class="alert alert-success text-center"><?php echo e(session('success')); ?></div>
   <?php endif; ?>
+  <?php if(session('error')): ?>
+    <div class="alert alert-danger text-center"><?php echo e(session('error')); ?></div>
+  <?php endif; ?>
 
   
   <form method="POST" action="<?php echo e(route('bus_expenses.store')); ?>" enctype="multipart/form-data" class="row g-3 mb-4">
@@ -96,13 +99,13 @@
     </div>
 
     <div class="col-md-3">
-      <label class="form-label">من تاريخ</label>
-      <input type="date" name="from_date" value="<?php echo e(request('from_date')); ?>" class="form-control">
-    </div>
-
-    <div class="col-md-3">
-      <label class="form-label">إلى تاريخ</label>
-      <input type="date" name="to_date" value="<?php echo e(request('to_date')); ?>" class="form-control">
+      <label class="form-label">الحالة</label>
+      <select name="status" class="form-select">
+        <option value="">الكل</option>
+        <option value="pending" <?php echo e(request('status') == 'pending' ? 'selected' : ''); ?>>قيد المراجعة</option>
+        <option value="approved" <?php echo e(request('status') == 'approved' ? 'selected' : ''); ?>>تمت الموافقة</option>
+        <option value="rejected" <?php echo e(request('status') == 'rejected' ? 'selected' : ''); ?>>مرفوض</option>
+      </select>
     </div>
 
     <div class="col-12 text-center mt-3">
@@ -129,6 +132,7 @@
           <th>المبلغ</th>
           <th>التاريخ</th>
           <th>الملاحظات</th>
+          <th>الحالة</th>
           <th>الفاتورة</th>
           <th>تعديل</th>
           <th>حذف</th>
@@ -143,6 +147,18 @@
             <td><?php echo e($exp->expense_date); ?></td>
             <td><?php echo e($exp->description ?? '-'); ?></td>
             <td>
+              <?php if($exp->status == 'pending'): ?>
+                <span class="badge bg-warning text-dark">قيد المراجعة</span>
+              <?php elseif($exp->status == 'approved'): ?>
+                <span class="badge bg-success">تمت الموافقة</span>
+              <?php elseif($exp->status == 'rejected'): ?>
+                <span class="badge bg-danger">مرفوض</span>
+              <?php else: ?>
+                <span class="badge bg-secondary">غير محدد</span>
+              <?php endif; ?>
+            </td>
+            
+            <td>
               <?php if($exp->receipt_pdf): ?>
                 <a href="<?php echo e(route('bus_expenses.view', $exp->id)); ?>" target="_blank" class="btn btn-sm btn-outline-primary">عرض</a>
               <?php else: ?>
@@ -150,20 +166,28 @@
               <?php endif; ?>
             </td>
             <td>
-              <button class="btn btn-sm btn-info text-white editBtn" data-exp='<?php echo json_encode($exp, 15, 512) ?>'>
-                <i class="bi bi-pencil-square"></i>
-              </button>
+              <?php if($exp->status == 'pending'): ?>
+                <button class="btn btn-sm btn-info text-white editBtn" data-exp='<?php echo json_encode($exp, 15, 512) ?>'>
+                  <i class="bi bi-pencil-square"></i>
+                </button>
+              <?php else: ?>
+                <span class="text-muted">-</span>
+              <?php endif; ?>
             </td>
             <td>
-              <form method="POST" action="<?php echo e(route('bus_expenses.delete', $exp->id)); ?>" onsubmit="return confirm('هل أنت متأكد من حذف هذا المصروف؟');">
-                <?php echo csrf_field(); ?>
-                <?php echo method_field('DELETE'); ?>
-                <button class="btn btn-sm btn-danger"><i class="bi bi-trash"></i></button>
-              </form>
+              <?php if($exp->status == 'pending'): ?>
+                <form method="POST" action="<?php echo e(route('bus_expenses.delete', $exp->id)); ?>" onsubmit="return confirm('هل أنت متأكد من حذف هذا المصروف؟');">
+                  <?php echo csrf_field(); ?>
+                  <?php echo method_field('DELETE'); ?>
+                  <button class="btn btn-sm btn-danger"><i class="bi bi-trash"></i></button>
+                </form>
+              <?php else: ?>
+                <span class="text-muted">-</span>
+              <?php endif; ?>
             </td>
           </tr>
         <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
-          <tr><td colspan="8" class="text-muted">لا توجد مصروفات بعد</td></tr>
+          <tr><td colspan="9" class="text-muted">لا توجد مصروفات بعد</td></tr>
         <?php endif; ?>
       </tbody>
     </table>
@@ -268,24 +292,10 @@ $(function(){
       success: function(res){
         if(res.success){
           $('#editExpenseModal').modal('hide');
-
-          const toast = $('<div>')
-            .text(res.message)
-            .css({
-              position: 'fixed',
-              top: '20px',
-              right: '20px',
-              background: '#198754',
-              color: '#fff',
-              padding: '10px 20px',
-              borderRadius: '6px',
-              zIndex: '9999',
-              boxShadow: '0 2px 10px rgba(0,0,0,0.15)'
-            })
-            .appendTo('body');
-
-          setTimeout(() => toast.fadeOut(400, () => toast.remove()), 2500);
-          setTimeout(() => location.reload(), 1500);
+          alert(res.message);
+          location.reload();
+        } else {
+          alert('⚠️ لم يتم التحديث');
         }
       },
       error: function(xhr){

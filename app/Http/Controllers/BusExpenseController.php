@@ -8,37 +8,40 @@ use App\Models\BusExpense;
 
 class BusExpenseController extends Controller
 {
+    // 🔹 عرض الصفحة الرئيسية لمصروفات الحافلات
     public function index(Request $request)
-{
-    $buses = Bus::all();
-    $query = BusExpense::with('bus');
+    {
+        $buses = Bus::all();
+        $query = BusExpense::with('bus');
 
-    // 🔹 فلترة حسب رقم الحافلة
-    if ($request->filled('bus_id')) {
-        $query->where('bus_id', $request->bus_id);
+        // ✅ فلترة حسب رقم الحافلة
+        if ($request->filled('bus_id')) {
+            $query->where('bus_id', $request->bus_id);
+        }
+
+        // ✅ فلترة حسب نوع المصروف
+        if ($request->filled('expense_type')) {
+            $query->where('expense_type', $request->expense_type);
+        }
+
+        // ✅ فلترة حسب التاريخ
+        if ($request->filled('from_date')) {
+            $query->whereDate('expense_date', '>=', $request->from_date);
+        }
+        if ($request->filled('to_date')) {
+            $query->whereDate('expense_date', '<=', $request->to_date);
+        }
+
+        // ✅ عرض جميع السجلات (بغض النظر عن الحالة)
+        $expenses = $query->latest()->get();
+
+        // ✅ المجموع العام فقط للمصروفات "المعتمدة"
+        $total = BusExpense::where('status', 'approved')->sum('amount');
+
+        return view('bus_expenses', compact('buses', 'expenses', 'total'));
     }
 
-    // 🔹 فلترة حسب نوع المصروف
-    if ($request->filled('expense_type')) {
-        $query->where('expense_type', $request->expense_type);
-    }
-
-    // 🔹 فلترة حسب التاريخ
-    if ($request->filled('from_date')) {
-        $query->whereDate('expense_date', '>=', $request->from_date);
-    }
-    if ($request->filled('to_date')) {
-        $query->whereDate('expense_date', '<=', $request->to_date);
-    }
-
-    $expenses = $query->latest()->get();
-    $total = $expenses->sum('amount');
-
-    return view('bus_expenses', compact('buses', 'expenses', 'total'));
-}
-
-
-    // ✅ حفظ مصروف جديد
+    // 🔹 إضافة مصروف جديد (افتراضيًا بالحالة pending)
     public function store(Request $request)
     {
         $request->validate([
@@ -60,30 +63,31 @@ class BusExpenseController extends Controller
             'amount' => $request->amount,
             'expense_date' => $request->expense_date,
             'receipt_pdf' => $path,
+            'status' => 'pending', // 🟡 بانتظار موافقة المالية
         ]);
 
-        return redirect()->back()->with('success', 'تمت إضافة المصروف بنجاح ✅');
+        return redirect()->back()->with('success', 'تمت إضافة المصروف وإرساله إلى المالية للمراجعة ✅');
     }
 
+    // 🔹 عرض ملف الفاتورة
     public function viewReceipt($id)
-{
-    $expense = BusExpense::findOrFail($id);
+    {
+        $expense = BusExpense::findOrFail($id);
 
-    if (!$expense->receipt_pdf) {
-        abort(404, 'لا يوجد ملف فاتورة');
+        if (!$expense->receipt_pdf) {
+            abort(404, 'لا يوجد ملف فاتورة');
+        }
+
+        $path = storage_path('app/public/' . $expense->receipt_pdf);
+
+        if (!file_exists($path)) {
+            abort(404, 'الملف غير موجود');
+        }
+
+        return response()->file($path);
     }
 
-    $path = storage_path('app/public/' . $expense->receipt_pdf);
-
-    if (!file_exists($path)) {
-        abort(404, 'الملف غير موجود');
-    }
-
-    return response()->file($path);
-}
-
-
-    // ✅ تعديل بيانات المصروف (AJAX)
+    // 🔹 تعديل مصروف
     public function update(Request $request, $id)
     {
         $expense = BusExpense::findOrFail($id);
@@ -96,7 +100,6 @@ class BusExpenseController extends Controller
             'receipt_pdf' => 'nullable|mimes:pdf|max:2048',
         ]);
 
-        // تحديث الملف فقط إذا تم رفع جديد
         if ($request->hasFile('receipt_pdf')) {
             if ($expense->receipt_pdf && file_exists(storage_path('app/public/' . $expense->receipt_pdf))) {
                 unlink(storage_path('app/public/' . $expense->receipt_pdf));
@@ -112,14 +115,13 @@ class BusExpenseController extends Controller
             'receipt_pdf' => $expense->receipt_pdf,
         ]);
 
-        // ✅ عند التعديل عبر AJAX نعيد JSON
         return response()->json([
             'success' => true,
             'message' => 'تم تحديث بيانات المصروف بنجاح ✅',
         ]);
     }
 
-    // ✅ حذف مصروف
+    // 🔹 حذف مصروف
     public function destroy($id)
     {
         $expense = BusExpense::findOrFail($id);

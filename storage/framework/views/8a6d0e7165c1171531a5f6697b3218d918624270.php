@@ -11,18 +11,17 @@
       <i class="bi bi-graph-up-arrow me-2 text-primary"></i> التقارير والتحليل المالي
     </h5>
     <div>
-  <a href="<?php echo e(route('financial.reports.exportPDF', request()->all())); ?>" class="btn btn-outline-primary btn-sm">
-    <i class="bi bi-file-earmark-pdf me-1"></i> تصدير PDF
-  </a>
-  <a href="<?php echo e(route('financial.reports.exportExcel', request()->all())); ?>" class="btn btn-outline-success btn-sm">
-    <i class="bi bi-file-earmark-excel me-1"></i> تصدير Excel
-  </a>
-</div>
-
+      <a href="<?php echo e(route('financial.reports.exportPDF', request()->all())); ?>" class="btn btn-outline-primary btn-sm">
+        <i class="bi bi-file-earmark-pdf me-1"></i> تصدير PDF
+      </a>
+      <a href="<?php echo e(route('financial.reports.exportExcel', request()->all())); ?>" class="btn btn-outline-success btn-sm">
+        <i class="bi bi-file-earmark-excel me-1"></i> تصدير Excel
+      </a>
+    </div>
   </div>
 
   
-  <form action="<?php echo e(route('financial.reports.filter')); ?>" method="GET" class="row g-3 bg-light p-3 rounded mb-4">
+  <form action="<?php echo e(route('financial.reports.filter')); ?>" method="GET" class="row g-3 bg-light p-3 rounded mb-4 shadow-sm">
     <div class="col-md-3">
       <label class="form-label">من تاريخ</label>
       <input type="date" name="from" value="<?php echo e($from ?? ''); ?>" class="form-control" required>
@@ -37,10 +36,13 @@
         <option value="all" <?php echo e(($type ?? '') == 'all' ? 'selected' : ''); ?>>الكل</option>
         <option value="revenues" <?php echo e(($type ?? '') == 'revenues' ? 'selected' : ''); ?>>إيرادات</option>
         <option value="expenses" <?php echo e(($type ?? '') == 'expenses' ? 'selected' : ''); ?>>مصروفات</option>
+        <option value="bus" <?php echo e(($type ?? '') == 'bus' ? 'selected' : ''); ?>>مصروفات الحافلات فقط</option>
       </select>
     </div>
     <div class="col-md-3 d-flex align-items-end">
-      <button type="submit" class="btn btn-primary w-100"><i class="bi bi-funnel me-1"></i> تطبيق الفلتر</button>
+      <button type="submit" class="btn btn-primary w-100">
+        <i class="bi bi-funnel me-1"></i> تطبيق الفلتر
+      </button>
     </div>
   </form>
 
@@ -68,7 +70,7 @@
       <div class="card text-center shadow-sm border-0">
         <div class="card-body">
           <h6 class="text-muted">صافي الربح / العجز</h6>
-          <h4 class="fw-bold text-primary">
+          <h4 class="fw-bold <?php echo e(($netBalance ?? 0) >= 0 ? 'text-success' : 'text-danger'); ?>">
             <?php echo e(number_format($netBalance ?? 0, 2)); ?> ر.ع
           </h4>
         </div>
@@ -140,7 +142,10 @@
                 <?php endif; ?>
               </td>
               <td><?php echo e($t['name']); ?></td>
-              <td><?php echo e(number_format($t['amount'], 2)); ?></td>
+              <td class="<?php echo e($t['type'] == 'إيراد' ? 'text-success' : 'text-danger'); ?>">
+                <?php echo e(number_format($t['amount'], 2)); ?>
+
+              </td>
               <td><?php echo e(\Carbon\Carbon::parse($t['date'])->format('Y-m-d')); ?></td>
             </tr>
           <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>

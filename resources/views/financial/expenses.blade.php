@@ -65,6 +65,59 @@
     </div>
   @endif
 
+    {{-- ================================================== --}}
+  {{-- 🔸 جدول مصروفات الحافلات قيد المراجعة --}}
+  {{-- ================================================== --}}
+  @if(isset($pendingBusExpenses) && $pendingBusExpenses->count() > 0)
+  <div class="card mb-4 shadow-sm border-warning">
+    <div class="card-header bg-warning text-dark fw-semibold">
+      <i class="bi bi-bus-front me-2"></i> مصروفات الحافلات قيد المراجعة
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle text-center mb-0">
+          <thead class="table-warning">
+            <tr>
+              <th>#</th>
+              <th>رقم الحافلة</th>
+              <th>نوع المصروف</th>
+              <th>المبلغ (ر.ع)</th>
+              <th>التاريخ</th>
+              <th>الوصف</th>
+              <th>الإجراء</th>
+            </tr>
+          </thead>
+          <tbody>
+            @foreach($pendingBusExpenses as $exp)
+              <tr>
+                <td>{{ $loop->iteration }}</td>
+                <td>{{ $exp->bus->bus_number ?? 'غير محدد' }}</td>
+                <td>{{ $exp->expense_type }}</td>
+                <td class="fw-bold text-danger">{{ number_format($exp->amount, 3) }}</td>
+                <td>{{ $exp->expense_date }}</td>
+                <td>{{ $exp->description ?? '-' }}</td>
+                <td>
+                  <a href="{{ route('financial.bus_expenses.approve', $exp->id) }}" class="btn btn-success btn-sm">
+  <i class="bi bi-check-circle"></i> موافقة
+</a>
+
+<a href="{{ route('financial.bus_expenses.reject', $exp->id) }}" class="btn btn-outline-danger btn-sm">
+  <i class="bi bi-x-circle"></i> رفض
+</a>
+
+
+
+                </td>
+              </tr>
+            @endforeach
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  @endif
+
+
   {{-- ====== جدول المصروفات ====== --}}
   <div class="card shadow-sm border-0">
     <div class="card-body p-0">

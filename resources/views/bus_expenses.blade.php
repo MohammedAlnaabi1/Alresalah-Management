@@ -12,6 +12,9 @@
   @if(session('success'))
     <div class="alert alert-success text-center">{{ session('success') }}</div>
   @endif
+  @if(session('error'))
+    <div class="alert alert-danger text-center">{{ session('error') }}</div>
+  @endif
 
   {{-- ✅ نموذج إضافة مصروف --}}
   <form method="POST" action="{{ route('bus_expenses.store') }}" enctype="multipart/form-data" class="row g-3 mb-4">
@@ -96,13 +99,13 @@
     </div>
 
     <div class="col-md-3">
-      <label class="form-label">من تاريخ</label>
-      <input type="date" name="from_date" value="{{ request('from_date') }}" class="form-control">
-    </div>
-
-    <div class="col-md-3">
-      <label class="form-label">إلى تاريخ</label>
-      <input type="date" name="to_date" value="{{ request('to_date') }}" class="form-control">
+      <label class="form-label">الحالة</label>
+      <select name="status" class="form-select">
+        <option value="">الكل</option>
+        <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>قيد المراجعة</option>
+        <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>تمت الموافقة</option>
+        <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>مرفوض</option>
+      </select>
     </div>
 
     <div class="col-12 text-center mt-3">
@@ -129,6 +132,7 @@
           <th>المبلغ</th>
           <th>التاريخ</th>
           <th>الملاحظات</th>
+          <th>الحالة</th>
           <th>الفاتورة</th>
           <th>تعديل</th>
           <th>حذف</th>
@@ -143,6 +147,18 @@
             <td>{{ $exp->expense_date }}</td>
             <td>{{ $exp->description ?? '-' }}</td>
             <td>
+              @if($exp->status == 'pending')
+                <span class="badge bg-warning text-dark">قيد المراجعة</span>
+              @elseif($exp->status == 'approved')
+                <span class="badge bg-success">تمت الموافقة</span>
+              @elseif($exp->status == 'rejected')
+                <span class="badge bg-danger">مرفوض</span>
+              @else
+                <span class="badge bg-secondary">غير محدد</span>
+              @endif
+            </td>
+            
+            <td>
               @if($exp->receipt_pdf)
                 <a href="{{ route('bus_expenses.view', $exp->id) }}" target="_blank" class="btn btn-sm btn-outline-primary">عرض</a>
               @else
@@ -150,20 +166,28 @@
               @endif
             </td>
             <td>
-              <button class="btn btn-sm btn-info text-white editBtn" data-exp='@json($exp)'>
-                <i class="bi bi-pencil-square"></i>
-              </button>
+              @if($exp->status == 'pending')
+                <button class="btn btn-sm btn-info text-white editBtn" data-exp='@json($exp)'>
+                  <i class="bi bi-pencil-square"></i>
+                </button>
+              @else
+                <span class="text-muted">-</span>
+              @endif
             </td>
             <td>
-              <form method="POST" action="{{ route('bus_expenses.delete', $exp->id) }}" onsubmit="return confirm('هل أنت متأكد من حذف هذا المصروف؟');">
-                @csrf
-                @method('DELETE')
-                <button class="btn btn-sm btn-danger"><i class="bi bi-trash"></i></button>
-              </form>
+              @if($exp->status == 'pending')
+                <form method="POST" action="{{ route('bus_expenses.delete', $exp->id) }}" onsubmit="return confirm('هل أنت متأكد من حذف هذا المصروف؟');">
+                  @csrf
+                  @method('DELETE')
+                  <button class="btn btn-sm btn-danger"><i class="bi bi-trash"></i></button>
+                </form>
+              @else
+                <span class="text-muted">-</span>
+              @endif
             </td>
           </tr>
         @empty
-          <tr><td colspan="8" class="text-muted">لا توجد مصروفات بعد</td></tr>
+          <tr><td colspan="9" class="text-muted">لا توجد مصروفات بعد</td></tr>
         @endforelse
       </tbody>
     </table>
@@ -268,24 +292,10 @@ $(function(){
       success: function(res){
         if(res.success){
           $('#editExpenseModal').modal('hide');
-
-          const toast = $('<div>')
-            .text(res.message)
-            .css({
-              position: 'fixed',
-              top: '20px',
-              right: '20px',
-              background: '#198754',
-              color: '#fff',
-              padding: '10px 20px',
-              borderRadius: '6px',
-              zIndex: '9999',
-              boxShadow: '0 2px 10px rgba(0,0,0,0.15)'
-            })
-            .appendTo('body');
-
-          setTimeout(() => toast.fadeOut(400, () => toast.remove()), 2500);
-          setTimeout(() => location.reload(), 1500);
+          alert(res.message);
+          location.reload();
+        } else {
+          alert('⚠️ لم يتم التحديث');
         }
       },
       error: function(xhr){

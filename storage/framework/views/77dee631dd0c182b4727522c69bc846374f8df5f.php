@@ -66,6 +66,59 @@
     </div>
   <?php endif; ?>
 
+    
+  
+  
+  <?php if(isset($pendingBusExpenses) && $pendingBusExpenses->count() > 0): ?>
+  <div class="card mb-4 shadow-sm border-warning">
+    <div class="card-header bg-warning text-dark fw-semibold">
+      <i class="bi bi-bus-front me-2"></i> مصروفات الحافلات قيد المراجعة
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle text-center mb-0">
+          <thead class="table-warning">
+            <tr>
+              <th>#</th>
+              <th>رقم الحافلة</th>
+              <th>نوع المصروف</th>
+              <th>المبلغ (ر.ع)</th>
+              <th>التاريخ</th>
+              <th>الوصف</th>
+              <th>الإجراء</th>
+            </tr>
+          </thead>
+          <tbody>
+            <?php $__currentLoopData = $pendingBusExpenses; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $exp): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+              <tr>
+                <td><?php echo e($loop->iteration); ?></td>
+                <td><?php echo e($exp->bus->bus_number ?? 'غير محدد'); ?></td>
+                <td><?php echo e($exp->expense_type); ?></td>
+                <td class="fw-bold text-danger"><?php echo e(number_format($exp->amount, 3)); ?></td>
+                <td><?php echo e($exp->expense_date); ?></td>
+                <td><?php echo e($exp->description ?? '-'); ?></td>
+                <td>
+                  <a href="<?php echo e(route('financial.bus_expenses.approve', $exp->id)); ?>" class="btn btn-success btn-sm">
+  <i class="bi bi-check-circle"></i> موافقة
+</a>
+
+<a href="<?php echo e(route('financial.bus_expenses.reject', $exp->id)); ?>" class="btn btn-outline-danger btn-sm">
+  <i class="bi bi-x-circle"></i> رفض
+</a>
+
+
+
+                </td>
+              </tr>
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <?php endif; ?>
+
+
   
   <div class="card shadow-sm border-0">
     <div class="card-body p-0">

@@ -5,24 +5,23 @@
 @section('content')
 
 <div class="container-fluid">
-  {{-- ===== عنوان الصفحة ===== --}}
+  {{-- ===== العنوان ===== --}}
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h5 class="fw-bold text-secondary mb-0">
       <i class="bi bi-graph-up-arrow me-2 text-primary"></i> التقارير والتحليل المالي
     </h5>
     <div>
-  <a href="{{ route('financial.reports.exportPDF', request()->all()) }}" class="btn btn-outline-primary btn-sm">
-    <i class="bi bi-file-earmark-pdf me-1"></i> تصدير PDF
-  </a>
-  <a href="{{ route('financial.reports.exportExcel', request()->all()) }}" class="btn btn-outline-success btn-sm">
-    <i class="bi bi-file-earmark-excel me-1"></i> تصدير Excel
-  </a>
-</div>
-
+      <a href="{{ route('financial.reports.exportPDF', request()->all()) }}" class="btn btn-outline-primary btn-sm">
+        <i class="bi bi-file-earmark-pdf me-1"></i> تصدير PDF
+      </a>
+      <a href="{{ route('financial.reports.exportExcel', request()->all()) }}" class="btn btn-outline-success btn-sm">
+        <i class="bi bi-file-earmark-excel me-1"></i> تصدير Excel
+      </a>
+    </div>
   </div>
 
   {{-- ===== نموذج الفلترة ===== --}}
-  <form action="{{ route('financial.reports.filter') }}" method="GET" class="row g-3 bg-light p-3 rounded mb-4">
+  <form action="{{ route('financial.reports.filter') }}" method="GET" class="row g-3 bg-light p-3 rounded mb-4 shadow-sm">
     <div class="col-md-3">
       <label class="form-label">من تاريخ</label>
       <input type="date" name="from" value="{{ $from ?? '' }}" class="form-control" required>
@@ -37,10 +36,13 @@
         <option value="all" {{ ($type ?? '') == 'all' ? 'selected' : '' }}>الكل</option>
         <option value="revenues" {{ ($type ?? '') == 'revenues' ? 'selected' : '' }}>إيرادات</option>
         <option value="expenses" {{ ($type ?? '') == 'expenses' ? 'selected' : '' }}>مصروفات</option>
+        <option value="bus" {{ ($type ?? '') == 'bus' ? 'selected' : '' }}>مصروفات الحافلات فقط</option>
       </select>
     </div>
     <div class="col-md-3 d-flex align-items-end">
-      <button type="submit" class="btn btn-primary w-100"><i class="bi bi-funnel me-1"></i> تطبيق الفلتر</button>
+      <button type="submit" class="btn btn-primary w-100">
+        <i class="bi bi-funnel me-1"></i> تطبيق الفلتر
+      </button>
     </div>
   </form>
 
@@ -68,7 +70,7 @@
       <div class="card text-center shadow-sm border-0">
         <div class="card-body">
           <h6 class="text-muted">صافي الربح / العجز</h6>
-          <h4 class="fw-bold text-primary">
+          <h4 class="fw-bold {{ ($netBalance ?? 0) >= 0 ? 'text-success' : 'text-danger' }}">
             {{ number_format($netBalance ?? 0, 2) }} ر.ع
           </h4>
         </div>
@@ -140,7 +142,9 @@
                 @endif
               </td>
               <td>{{ $t['name'] }}</td>
-              <td>{{ number_format($t['amount'], 2) }}</td>
+              <td class="{{ $t['type'] == 'إيراد' ? 'text-success' : 'text-danger' }}">
+                {{ number_format($t['amount'], 2) }}
+              </td>
               <td>{{ \Carbon\Carbon::parse($t['date'])->format('Y-m-d') }}</td>
             </tr>
           @empty

@@ -10,13 +10,15 @@ class BusExpense extends Model
     use HasFactory;
 
     protected $fillable = [
-        'bus_id',
-        'expense_type',
-        'description',
-        'amount',
-        'expense_date',
-        'receipt_pdf',
-    ];
+    'bus_id',
+    'expense_type',
+    'description',
+    'amount',
+    'expense_date',
+    'receipt_pdf',
+    'status', // 🟢 أضف هذا السطر
+];
+
 
     // ✅ علاقة المصروف مع الحافلة
     public function bus()

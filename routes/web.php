@@ -54,6 +54,11 @@ Route::prefix('bus')->group(function () {
     Route::get('/expenses/view/{id}', [BusExpenseController::class, 'viewReceipt'])->name('bus_expenses.view');
     Route::post('/expenses/update/{id}', [BusExpenseController::class, 'update'])->name('bus_expenses.update');
     Route::delete('/expenses/delete/{id}', [BusExpenseController::class, 'destroy'])->name('bus_expenses.delete');
+    Route::get('/bus-expenses/approve/{id}', [FinancialController::class, 'approveBusExpense'])
+    ->name('bus.expenses.approve');
+
+Route::get('/bus-expenses/reject/{id}', [FinancialController::class, 'rejectBusExpense'])
+    ->name('bus.expenses.reject');
 });
 
 // ====================================================================
@@ -75,6 +80,7 @@ Route::prefix('financial')->group(function () {
     Route::post('/expenses/store', [ExpenseController::class, 'store'])->name('financial.expenses.store');
     Route::delete('/expenses/delete/{id}', [ExpenseController::class, 'destroy'])->name('financial.expenses.delete');
     Route::post('/expenses/update/{id}', [ExpenseController::class, 'update'])->name('financial.expenses.update');
+    
 
 
     // 🔹 التقارير
@@ -85,3 +91,11 @@ Route::get('/financial/reports/export-pdf', [FinancialController::class, 'export
 Route::get('/financial/reports/export-excel', [FinancialController::class, 'exportExcel'])->name('financial.reports.exportExcel');
 
 });
+
+// ✅ موافقة مصروف الحافلات (من صفحة المالية)
+Route::get('/financial/bus-expenses/approve/{id}', [FinancialController::class, 'approveBusExpense'])
+    ->name('financial.bus_expenses.approve');
+
+// ✅ رفض مصروف الحافلات
+Route::get('/financial/bus-expenses/reject/{id}', [FinancialController::class, 'rejectBusExpense'])
+    ->name('financial.bus_expenses.reject');
