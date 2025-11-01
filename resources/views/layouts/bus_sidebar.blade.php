@@ -42,6 +42,11 @@
       padding: 20px 15px;
       box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
       z-index: 1000;
+      transition: transform 0.3s ease-in-out;
+    }
+
+    .sidebar.hide {
+      transform: translateX(100%);
     }
 
     .sidebar .brand {
@@ -116,37 +121,66 @@
       font-weight: 700;
       margin: 0;
     }
+
+    /* 🔹 زر القائمة للجوال */
+    .menu-toggle {
+      display: none;
+      background: var(--orange);
+      color: #fff;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 20px;
+    }
+
+    /* 🔹 استجابة الجوال */
+    @media (max-width: 991px) {
+      .sidebar {
+        transform: translateX(100%);
+      }
+
+      .sidebar.show {
+        transform: translateX(0);
+      }
+
+      .content {
+        margin-right: 0;
+      }
+
+      .menu-toggle {
+        display: inline-block;
+      }
+    }
   </style>
 </head>
 <body>
 
   {{-- ✅ الشريط الجانبي --}}
-  <div class="sidebar">
+  <div class="sidebar" id="sidebar">
     <div>
-      <div class="brand">
-        <img src="{{ asset('imag/Logo.png') }}" alt="شعار الرسالة">
-        <div>نظام إدارة الحافلات</div>
-      </div>
-
-      <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('bus.dashboard') ? 'active' : '' }}">
-  <i class="bi bi-speedometer2 me-2"></i> لوحة المعلومات
+      <a href="{{ route('home') }}" class="brand text-decoration-none text-center d-flex flex-column align-items-center">
+  <div class="logo-bg mb-2">
+    <img src="{{ asset('images/Logo.png') }}" alt="شعار الرسالة">
+  </div>
+  <span class="brand-text fw-bold text-white" style="font-size: 1.1rem;">ادارة الحافلات</span>
 </a>
 
+
+      <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('bus.dashboard') ? 'active' : '' }}">
+        <i class="bi bi-speedometer2 me-2"></i> لوحة المعلومات
+      </a>
 
       <a href="{{ route('bus') }}" class="{{ request()->routeIs('bus') ? 'active' : '' }}">
         <i class="bi bi-bus-front"></i> إدارة الحافلات
       </a>
 
-      <a href="{{ route('bus_expenses') }}" class="{{ request()->routeIs('bus.expenses') ? 'active' : '' }}">
+      <a href="{{ route('bus_expenses') }}" class="{{ request()->routeIs('bus_expenses') ? 'active' : '' }}">
         <i class="bi bi-cash-coin"></i> مصروفات الحافلات
       </a>
 
-      <li>
-  <a href="{{ route('bus.operations') }}">
-    <i class="bi bi-gear-wide-connected"></i> الصيانة والوقود
-  </a>
-</li>
-
+      <a href="{{ route('bus.operations') }}" class="{{ request()->routeIs('bus.operations') ? 'active' : '' }}">
+        <i class="bi bi-gear-wide-connected"></i> الصيانة والوقود
+      </a>
     </div>
 
     <form action="{{ route('logout') }}" method="POST">
@@ -160,7 +194,10 @@
   {{-- ✅ المحتوى --}}
   <div class="content">
     <div class="topbar">
-      <h5>@yield('title')</h5>
+      <div class="d-flex align-items-center gap-2">
+        <button class="menu-toggle" id="menu-toggle"><i class="bi bi-list"></i></button>
+        <h5>@yield('title')</h5>
+      </div>
       <div><i class="bi bi-person-circle me-1"></i> المستخدم</div>
     </div>
 
@@ -168,5 +205,12 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const toggleBtn = document.getElementById('menu-toggle');
+    const sidebar = document.getElementById('sidebar');
+    toggleBtn.addEventListener('click', () => {
+      sidebar.classList.toggle('show');
+    });
+  </script>
 </body>
 </html>

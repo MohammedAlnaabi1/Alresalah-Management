@@ -13,32 +13,39 @@ class ExpenseController extends Controller
     // 🔹 عرض صفحة إدارة المصروفات
     // ==========================================
     public function index(Request $request)
-    {
-        // ✅ جلب المصروفات الموجودة فعليًا في النظام المالي
-        $query = Expense::query();
+{
+    $query = Expense::query();
 
-        if ($request->filled('category')) {
-            $query->where('category', 'like', '%' . $request->category . '%');
-        }
-        if ($request->filled('payment_method')) {
-            $query->where('payment_method', $request->payment_method);
-        }
-        if ($request->filled('date_from') && $request->filled('date_to')) {
-            $query->whereBetween('date', [$request->date_from, $request->date_to]);
-        }
-        if ($request->filled('related_bus_id')) {
-            $query->where('related_bus_id', $request->related_bus_id);
-        }
-
-        // ✅ عرض فقط المصروفات المعتمدة (approved)
-        $expenses = $query->where('status', 'approved')->latest()->get();
-
-
-        // ✅ جلب مصروفات الحافلات "قيد المراجعة" من جدول bus_expenses
-        $pendingBusExpenses = BusExpense::where('status', 'pending')->latest()->get();
-
-        return view('financial.expenses', compact('expenses', 'pendingBusExpenses'));
+    // ✅ فلتر نوع المصروف (مثل: رواتب، كهرباء، صيانة، وقود...)
+    if ($request->filled('category')) {
+        $search = trim($request->category);
+        $query->whereRaw("LOWER(category) LIKE ?", ['%' . strtolower($search) . '%']);
     }
+
+    // ✅ فلتر رقم الحافلة (اختياري فقط)
+    if ($request->filled('related_bus_id')) {
+        $query->where('related_bus_id', $request->related_bus_id);
+    }
+
+    // ✅ فلتر حسب التاريخ
+    if ($request->filled('date_from') && $request->filled('date_to')) {
+        $query->whereBetween('date', [$request->date_from, $request->date_to]);
+    } elseif ($request->filled('date_from')) {
+        $query->whereDate('date', '>=', $request->date_from);
+    } elseif ($request->filled('date_to')) {
+        $query->whereDate('date', '<=', $request->date_to);
+    }
+
+    // ✅ يمكن لاحقاً إضافة فلاتر إضافية مثل الحالة (approved / pending)
+
+    // ✅ جلب النتائج بعد الفلترة
+    $expenses = $query->orderBy('date', 'desc')->get();
+
+    // ✅ جلب مصروفات الحافلات فقط "قيد المراجعة" لعرضها في القسم العلوي
+    $pendingBusExpenses = BusExpense::where('status', 'pending')->latest()->get();
+
+    return view('financial.expenses', compact('expenses', 'pendingBusExpenses'));
+}
 
     // ==========================================
     // 🔹 إضافة مصروف جديد (يدوي)
@@ -97,41 +104,63 @@ Expense::create($data);
     // 🔹 حذف المصروف
     // ==========================================
     public function destroy($id)
-    {
+{
+    try {
+        // ✅ البحث عن المصروف في جدول المالية
         $expense = Expense::findOrFail($id);
 
-        if ($expense->attachment && Storage::disk('public')->exists($expense->attachment)) {
-            Storage::disk('public')->delete($expense->attachment);
+        // ✅ إذا كان مرتبطًا بمصروف حافلة (أي له bus_expense_id)
+        if ($expense->related_bus_id) {
+            // البحث عن مصروف الحافلة المقابل بناءً على bus_id والمبلغ والتاريخ
+            $busExpense = \App\Models\BusExpense::where('bus_id', $expense->related_bus_id)
+                ->where('amount', $expense->amount)
+                ->whereDate('expense_date', $expense->date)
+                ->first();
+
+            // 🔹 إذا تم العثور عليه، نحذفه أيضًا
+            if ($busExpense) {
+                $busExpense->delete();
+            }
         }
 
+        // ✅ حذف المصروف من جدول المالية
         $expense->delete();
 
-        return redirect()->route('financial.expenses')->with('success', 'تم حذف المصروف بنجاح 🗑️');
+        // ✅ إرجاع رسالة نجاح
+        return redirect()->back()->with('success', 'تم حذف المصروف من النظام بنجاح وتحديث جميع الجداول.');
+
+    } catch (\Exception $e) {
+        // ⚠️ في حال حدوث أي خطأ
+        return redirect()->back()->with('error', 'حدث خطأ أثناء الحذف: ' . $e->getMessage());
     }
+}
 
     // ==========================================
     // 🔹 تأكيد مصروف الحافلة (تحويله لقسم المالية)
     // ==========================================
     public function approveBusExpense($id)
-    {
-        $busExpense = BusExpense::findOrFail($id);
+{
+    $busExpense = BusExpense::findOrFail($id);
 
-        // نقل البيانات إلى جدول المصروفات الرئيسي
-        Expense::create([
-            'category' => $busExpense->expense_type,
-            'payment_method' => 'نقدًا',
-            'amount' => $busExpense->amount,
-            'date' => $busExpense->expense_date,
-            'related_bus_id' => $busExpense->bus_id,
-            'notes' => $busExpense->description,
-        ]);
+    // ✅ نقل بيانات مصروف الحافلة إلى جدول المصروفات المالي بشكل موحد
+    $expense = Expense::create([
+        'category' => 'مصروف حافلة رقم ' . $busExpense->bus->bus_number,
+        'payment_method' => 'نقدًا', // أو اجعلها حسب نوع الحافلة لو موجود في الجدول
+        'amount' => $busExpense->amount,
+        'date' => $busExpense->expense_date,
+        'related_bus_id' => $busExpense->bus_id,
+        'bus_expense_id' => $busExpense->id,
+        'notes' => $busExpense->description,
+        'status' => 'approved', // ✅ تأكيد أن الحالة معتمدة رسميًا
+    ]);
 
-        // تحديث الحالة
-        $busExpense->status = 'approved';
-        $busExpense->save();
+    // ✅ تحديث حالة مصروف الحافلة في جدول bus_expenses
+    $busExpense->status = 'approved';
+    $busExpense->save();
 
-        return redirect()->route('financial.expenses')->with('success', 'تمت الموافقة على مصروف الحافلة ✅');
-    }
+    return redirect()->route('financial.expenses')
+        ->with('success', 'تمت الموافقة على مصروف الحافلة وإضافته إلى قائمة المصروفات المالية ✅');
+}
 
     // ==========================================
     // 🔹 رفض مصروف الحافلة

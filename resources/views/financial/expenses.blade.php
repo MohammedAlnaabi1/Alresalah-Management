@@ -15,47 +15,37 @@
     </button>
   </div>
 
-  {{-- ✅ نموذج الفلترة --}}
-  <form method="GET" action="{{ route('financial.expenses') }}" class="row g-3 mb-4 p-3 bg-light rounded shadow-sm">
-    <div class="col-md-3">
-      <label class="form-label">نوع المصروف</label>
-      <input type="text" name="category" value="{{ request('category') }}" class="form-control" placeholder="مثل: وقود أو صيانة">
-    </div>
+ <form method="GET" action="{{ route('financial.expenses') }}" class="row g-3 mb-4 p-3 bg-light rounded shadow-sm">
+  <div class="col-md-3">
+    <label class="form-label">نوع المصروف</label>
+    <input type="text" name="category" value="{{ request('category') }}" class="form-control" placeholder="مثل: وقود أو رواتب أو صيانة">
+  </div>
 
-    <div class="col-md-3">
-      <label class="form-label">طريقة الدفع</label>
-      <select name="payment_method" class="form-select">
-        <option value="">الكل</option>
-        <option value="نقدًا" {{ request('payment_method') == 'نقدًا' ? 'selected' : '' }}>نقدًا</option>
-        <option value="تحويل بنكي" {{ request('payment_method') == 'تحويل بنكي' ? 'selected' : '' }}>تحويل بنكي</option>
-        <option value="شيك" {{ request('payment_method') == 'شيك' ? 'selected' : '' }}>شيك</option>
-      </select>
-    </div>
+  <div class="col-md-3">
+    <label class="form-label">من تاريخ</label>
+    <input type="date" name="date_from" value="{{ request('date_from') }}" class="form-control">
+  </div>
 
-    <div class="col-md-2">
-      <label class="form-label">من تاريخ</label>
-      <input type="date" name="date_from" value="{{ request('date_from') }}" class="form-control">
-    </div>
+  <div class="col-md-3">
+    <label class="form-label">إلى تاريخ</label>
+    <input type="date" name="date_to" value="{{ request('date_to') }}" class="form-control">
+  </div>
 
-    <div class="col-md-2">
-      <label class="form-label">إلى تاريخ</label>
-      <input type="date" name="date_to" value="{{ request('date_to') }}" class="form-control">
-    </div>
+  <div class="col-md-3">
+    <label class="form-label">رقم الحافلة (اختياري)</label>
+    <input type="number" name="related_bus_id" value="{{ request('related_bus_id') }}" class="form-control" placeholder="رقم الحافلة">
+  </div>
 
-    <div class="col-md-2">
-      <label class="form-label">رقم الحافلة</label>
-      <input type="number" name="related_bus_id" value="{{ request('related_bus_id') }}" class="form-control" placeholder="رقم الحافلة">
-    </div>
+  <div class="col-12 text-center">
+    <button type="submit" class="btn btn-primary btn-sm">
+      <i class="bi bi-search me-1"></i> بحث
+    </button>
+    <a href="{{ route('financial.expenses') }}" class="btn btn-secondary btn-sm">
+      <i class="bi bi-arrow-repeat me-1"></i> إعادة تعيين
+    </a>
+  </div>
+</form>
 
-    <div class="col-12 text-center">
-      <button type="submit" class="btn btn-primary btn-sm">
-        <i class="bi bi-search me-1"></i> بحث
-      </button>
-      <a href="{{ route('financial.expenses') }}" class="btn btn-secondary btn-sm">
-        <i class="bi bi-arrow-repeat me-1"></i> إعادة تعيين
-      </a>
-    </div>
-  </form>
 
   {{-- ====== تنبيهات الرسائل ====== --}}
   @if(session('success'))
@@ -65,7 +55,7 @@
     </div>
   @endif
 
-    {{-- ================================================== --}}
+  {{-- ================================================== --}}
   {{-- 🔸 جدول مصروفات الحافلات قيد المراجعة --}}
   {{-- ================================================== --}}
   @if(isset($pendingBusExpenses) && $pendingBusExpenses->count() > 0)
@@ -98,15 +88,11 @@
                 <td>{{ $exp->description ?? '-' }}</td>
                 <td>
                   <a href="{{ route('financial.bus_expenses.approve', $exp->id) }}" class="btn btn-success btn-sm">
-  <i class="bi bi-check-circle"></i> موافقة
-</a>
-
-<a href="{{ route('financial.bus_expenses.reject', $exp->id) }}" class="btn btn-outline-danger btn-sm">
-  <i class="bi bi-x-circle"></i> رفض
-</a>
-
-
-
+                    <i class="bi bi-check-circle"></i> موافقة
+                  </a>
+                  <a href="{{ route('financial.bus_expenses.reject', $exp->id) }}" class="btn btn-outline-danger btn-sm">
+                    <i class="bi bi-x-circle"></i> رفض
+                  </a>
                 </td>
               </tr>
             @endforeach
@@ -116,7 +102,6 @@
     </div>
   </div>
   @endif
-
 
   {{-- ====== جدول المصروفات ====== --}}
   <div class="card shadow-sm border-0">
@@ -161,16 +146,22 @@
                 @endif
               </td>
               <td>
-              <button class="btn btn-outline-info btn-sm editBtn" data-exp='@json($expense)'>
-                <i class="bi bi-pencil-square"></i>
-              </button>
+                {{-- زر التعديل يظهر فقط قبل الموافقة --}}
+                @if($expense->status != 'approved')
+                  <button class="btn btn-outline-info btn-sm editBtn" data-exp='@json($expense)'>
+                    <i class="bi bi-pencil-square"></i>
+                  </button>
+                @endif
 
-              <form action="{{ route('financial.expenses.delete', $expense->id) }}" method="POST" class="d-inline" onsubmit="return confirm('هل أنت متأكد من الحذف؟');">
-              @csrf
-              @method('DELETE')
-              <button class="btn btn-outline-danger btn-sm"><i class="bi bi-trash"></i></button>
-              </form>
-             </td>
+                {{-- زر الحذف يبقى دائمًا --}}
+                <form action="{{ route('financial.expenses.delete', $expense->id) }}" method="POST" class="d-inline" onsubmit="return confirm('⚠️ هل أنت متأكد من الحذف؟ سيتم حذف المصروف من جميع الجداول وتحديث النظام.');">
+                  @csrf
+                  @method('DELETE')
+                  <button class="btn btn-outline-danger btn-sm">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </form>
+              </td>
             </tr>
           @empty
             <tr>
@@ -182,6 +173,10 @@
     </div>
   </div>
 </div>
+
+
+
+
 
 {{-- ====== نافذة الإضافة ====== --}}
 <div class="modal fade" id="addExpenseModal" tabindex="-1" aria-labelledby="addExpenseModalLabel" aria-hidden="true">

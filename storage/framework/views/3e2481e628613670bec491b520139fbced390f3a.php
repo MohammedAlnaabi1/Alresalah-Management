@@ -151,7 +151,7 @@
 <body>
 
   <div class="login-box">
-    <img src="<?php echo e(asset('imag/Logo.png')); ?>" alt="شعار المؤسسة" class="login-logo">
+    <img src="<?php echo e(asset('images/Logo.png')); ?>" alt="شعار المؤسسة" class="login-logo">
     <h3 class="text-center text-warning mb-4">تسجيل الدخول</h3>
 
     <?php if(session('error')): ?>

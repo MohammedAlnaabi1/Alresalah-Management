@@ -3,45 +3,75 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\LoginActivity;
+use Illuminate\Support\Facades\Route;
 
 class AuthController extends Controller
 {
     // 🔹 صفحة تسجيل الدخول
     public function showLogin()
     {
-        return view('Login'); // أو layouts.Login إذا كان داخل مجلد layouts
+        return view('Login');
     }
 
     // 🔹 التحقق من بيانات الدخول
     public function login(Request $request)
     {
-        $username = $request->input('username');
-        $password = $request->input('password');
+        // التحقق من أن الحقول غير فارغة
+        $request->validate([
+            'username' => 'required',
+            'password' => 'required',
+        ]);
 
-        // 🔹 مجموعة المستخدمين التجريبية مع المسارات الصحيحة
+        $username = trim($request->input('username'));
+        $password = trim($request->input('password'));
+
+        // المستخدمين التجريبيين
         $users = [
-    'bus' => [
-        'password' => 'bus123',
-        'redirect' => 'bus_expenses'
-    ],
-    'finance' => [
-        'password' => 'finance123',
-        'redirect' => 'financial.index'
-    ],
-    'admin' => [
-        'password' => 'admin123',
-        'redirect' => 'dashboard'
-    ],
-];
+            'bus' => [
+                'password' => 'bus123',
+                'redirect' => 'dashboard'
+            ],
+            'finance' => [
+                'password' => 'finance123',
+                'redirect' => 'financial.dashboard'
+            ],
+            'admin' => [
+                'password' => 'admin123',
+                'redirect' => 'admin.dashboard'
+            ],
+        ];
 
-        // 🔸 التحقق من بيانات المستخدم
+
+        
+
         foreach ($users as $key => $user) {
             if ($username === $key && $password === $user['password']) {
-                return redirect()->route($user['redirect']);
+                
+
+                // تسجيل الدخول في جدول LoginActivity
+                LoginActivity::create([
+                    'username' => $username,
+                    'ip_address' => $request->ip(),
+                    'login_time' => now(),
+                ]);
+
+                // التوجيه
+                if (Route::has($user['redirect'])) {
+                    return redirect()->route($user['redirect']);
+                } else {
+                    return back()->with('error', '⚠️ لم يتم العثور على الصفحة المطلوبة. تحقق من المسار.');
+                }
             }
         }
 
-        // 🔸 في حال الخطأ
-        return back()->with('error', 'اسم المستخدم أو كلمة المرور غير صحيحة');
+        return back()->with('error', '❌ اسم المستخدم أو كلمة المرور غير صحيحة');
+    }
+
+    // 🔹 تسجيل الخروج
+    public function logout(Request $request)
+    {
+        $request->session()->flush();
+        return redirect()->route('login');
     }
 }

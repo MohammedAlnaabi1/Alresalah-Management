@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  
   <meta charset="UTF-8">
   <meta name="csrf-token" content="{{ csrf_token() }}">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,13 +9,17 @@
   {{-- Bootstrap + Icons --}}
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600&display=swap" rel="stylesheet">
+
   <style>
     body {
       background-color: #f5f6fa;
       font-family: 'Cairo', sans-serif;
+      margin: 0;
+      overflow-x: hidden;
     }
 
-    /* Sidebar */
+    /* 🔸 الشريط الجانبي */
     .sidebar {
       width: 240px;
       height: 100vh;
@@ -30,18 +33,30 @@
       justify-content: space-between;
       padding: 20px 10px;
       border-radius: 0 0 0 10px;
+      z-index: 1000;
+      transition: transform 0.3s ease-in-out;
+    }
+
+    .sidebar.hide {
+      transform: translateX(100%);
     }
 
     .sidebar .brand {
-      font-size: 1.2rem;
-      font-weight: bold;
       text-align: center;
       margin-bottom: 30px;
     }
 
     .sidebar .brand img {
-      width: 60px;
-      margin-bottom: 10px;
+      width: 70px;
+      background: #fff;
+      border-radius: 50%;
+      padding: 5px;
+      margin-bottom: 8px;
+      transition: transform 0.3s;
+    }
+
+    .sidebar .brand img:hover {
+      transform: scale(1.05);
     }
 
     .sidebar a {
@@ -67,10 +82,11 @@
       margin-top: 20px;
     }
 
-    /* Content area */
+    /* 🔹 منطقة المحتوى */
     .content {
       margin-right: 260px;
       padding: 20px;
+      transition: margin 0.3s;
     }
 
     .topbar {
@@ -83,19 +99,57 @@
       justify-content: space-between;
       align-items: center;
     }
+
+    .topbar h5 {
+      color: #333;
+      margin: 0;
+      font-weight: 700;
+    }
+
+    /* 🔹 زر القائمة للجوال */
+    .menu-toggle {
+      display: none;
+      background: #f57c00;
+      color: #fff;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 20px;
+    }
+
+    /* 🔹 استجابة الشاشات الصغيرة */
+    @media (max-width: 991px) {
+      .sidebar {
+        transform: translateX(100%);
+      }
+      .sidebar.show {
+        transform: translateX(0);
+      }
+      .content {
+        margin-right: 0;
+      }
+      .menu-toggle {
+        display: inline-block;
+      }
+      
+    }
   </style>
 </head>
 <body>
 
-  {{-- Sidebar --}}
-  <div class="sidebar">
+  {{-- ✅ الشريط الجانبي --}}
+  <div class="sidebar" id="sidebar">
     <div>
-      <div class="brand">
-        <img src="{{ asset('imag/Logo.png') }}" alt="شعار الرسالة">
-        <div>الإدارة المالية</div>
-      </div>
+      <a href="{{ route('home') }}" class="brand text-decoration-none text-center d-flex flex-column align-items-center">
+  <div class="logo-bg mb-2">
+    <img src="{{ asset('images/Logo.png') }}" alt="شعار الرسالة">
+  </div>
+  <span class="brand-text fw-bold text-white" style="font-size: 1.1rem;">مدرسة الرسالة</span>
+</a>
 
-      <a href="{{ route('financial.index') }}" class="{{ request()->routeIs('financial.index') ? 'active' : '' }}">
+
+
+      <a href="{{ route('financial.dashboard') }}" class="{{ request()->routeIs('financial.dashboard') ? 'active' : '' }}">
         <i class="bi bi-speedometer2 me-2"></i> لوحة المعلومات
       </a>
       <a href="{{ route('financial.revenues') }}" class="{{ request()->routeIs('financial.revenues') ? 'active' : '' }}">
@@ -107,6 +161,7 @@
       <a href="{{ route('financial.reports') }}" class="{{ request()->routeIs('financial.reports') ? 'active' : '' }}">
         <i class="bi bi-graph-up-arrow me-2"></i> التقارير
       </a>
+
       
     </div>
 
@@ -118,13 +173,14 @@
     </form>
   </div>
 
-  {{-- Main Content --}}
+  {{-- ✅ منطقة المحتوى --}}
   <div class="content">
     <div class="topbar">
-      <h5 class="m-0 fw-bold">@yield('title')</h5>
-      <div>
-        <i class="bi bi-person-circle me-1"></i> المستخدم
+      <div class="d-flex align-items-center gap-2">
+        <button class="menu-toggle" id="menu-toggle"><i class="bi bi-list"></i></button>
+        <h5 class="m-0 fw-bold">@yield('title')</h5>
       </div>
+      <div><i class="bi bi-person-circle me-1"></i> المستخدم</div>
     </div>
 
     {{-- محتوى كل صفحة مالية --}}
@@ -132,5 +188,12 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const toggleBtn = document.getElementById('menu-toggle');
+    const sidebar = document.getElementById('sidebar');
+    toggleBtn.addEventListener('click', () => {
+      sidebar.classList.toggle('show');
+    });
+  </script>
 </body>
 </html>

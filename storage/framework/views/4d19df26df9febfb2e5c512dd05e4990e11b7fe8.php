@@ -42,6 +42,11 @@
       padding: 20px 15px;
       box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
       z-index: 1000;
+      transition: transform 0.3s ease-in-out;
+    }
+
+    .sidebar.hide {
+      transform: translateX(100%);
     }
 
     .sidebar .brand {
@@ -116,37 +121,66 @@
       font-weight: 700;
       margin: 0;
     }
+
+    /* 🔹 زر القائمة للجوال */
+    .menu-toggle {
+      display: none;
+      background: var(--orange);
+      color: #fff;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 20px;
+    }
+
+    /* 🔹 استجابة الجوال */
+    @media (max-width: 991px) {
+      .sidebar {
+        transform: translateX(100%);
+      }
+
+      .sidebar.show {
+        transform: translateX(0);
+      }
+
+      .content {
+        margin-right: 0;
+      }
+
+      .menu-toggle {
+        display: inline-block;
+      }
+    }
   </style>
 </head>
 <body>
 
   
-  <div class="sidebar">
+  <div class="sidebar" id="sidebar">
     <div>
-      <div class="brand">
-        <img src="<?php echo e(asset('imag/Logo.png')); ?>" alt="شعار الرسالة">
-        <div>نظام إدارة الحافلات</div>
-      </div>
-
-      <a href="<?php echo e(route('dashboard')); ?>" class="<?php echo e(request()->routeIs('bus.dashboard') ? 'active' : ''); ?>">
-  <i class="bi bi-speedometer2 me-2"></i> لوحة المعلومات
+      <a href="<?php echo e(route('home')); ?>" class="brand text-decoration-none text-center d-flex flex-column align-items-center">
+  <div class="logo-bg mb-2">
+    <img src="<?php echo e(asset('images/Logo.png')); ?>" alt="شعار الرسالة">
+  </div>
+  <span class="brand-text fw-bold text-white" style="font-size: 1.1rem;">ادارة الحافلات</span>
 </a>
 
+
+      <a href="<?php echo e(route('dashboard')); ?>" class="<?php echo e(request()->routeIs('bus.dashboard') ? 'active' : ''); ?>">
+        <i class="bi bi-speedometer2 me-2"></i> لوحة المعلومات
+      </a>
 
       <a href="<?php echo e(route('bus')); ?>" class="<?php echo e(request()->routeIs('bus') ? 'active' : ''); ?>">
         <i class="bi bi-bus-front"></i> إدارة الحافلات
       </a>
 
-      <a href="<?php echo e(route('bus_expenses')); ?>" class="<?php echo e(request()->routeIs('bus.expenses') ? 'active' : ''); ?>">
+      <a href="<?php echo e(route('bus_expenses')); ?>" class="<?php echo e(request()->routeIs('bus_expenses') ? 'active' : ''); ?>">
         <i class="bi bi-cash-coin"></i> مصروفات الحافلات
       </a>
 
-      <li>
-  <a href="<?php echo e(route('bus.operations')); ?>">
-    <i class="bi bi-gear-wide-connected"></i> الصيانة والوقود
-  </a>
-</li>
-
+      <a href="<?php echo e(route('bus.operations')); ?>" class="<?php echo e(request()->routeIs('bus.operations') ? 'active' : ''); ?>">
+        <i class="bi bi-gear-wide-connected"></i> الصيانة والوقود
+      </a>
     </div>
 
     <form action="<?php echo e(route('logout')); ?>" method="POST">
@@ -160,7 +194,10 @@
   
   <div class="content">
     <div class="topbar">
-      <h5><?php echo $__env->yieldContent('title'); ?></h5>
+      <div class="d-flex align-items-center gap-2">
+        <button class="menu-toggle" id="menu-toggle"><i class="bi bi-list"></i></button>
+        <h5><?php echo $__env->yieldContent('title'); ?></h5>
+      </div>
       <div><i class="bi bi-person-circle me-1"></i> المستخدم</div>
     </div>
 
@@ -168,6 +205,13 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const toggleBtn = document.getElementById('menu-toggle');
+    const sidebar = document.getElementById('sidebar');
+    toggleBtn.addEventListener('click', () => {
+      sidebar.classList.toggle('show');
+    });
+  </script>
 </body>
 </html>
 <?php /**PATH C:\xampp\htdocs\Alresalah-Managment\resources\views/layouts/bus_sidebar.blade.php ENDPATH**/ ?>
