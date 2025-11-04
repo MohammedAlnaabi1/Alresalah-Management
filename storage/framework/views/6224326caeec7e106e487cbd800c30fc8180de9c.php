@@ -3,6 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- ✅ SEO معلومات عامة -->
+<meta name="description" content="مدرسة الرسالة لتحفيظ القرآن الكريم - تعليم وتربية على منهج القرآن في بيئة تربوية متميزة.">
+<meta name="keywords" content="مدرسة الرسالة, تحفيظ القرآن, مدارس عمان, تعليم القرآن, الرسالة العامرات">
+<meta name="author" content="مدرسة الرسالة">
+
+<!-- ✅ العنوان الظاهر في محركات البحث -->
+<title>مدرسة الرسالة لتحفيظ القرآن الكريم</title>
+
+<!-- ✅ لجوجل وسوشيال ميديا -->
+<meta property="og:title" content="مدرسة الرسالة لتحفيظ القرآن الكريم">
+<meta property="og:description" content="تعليم وتربية على منهج القرآن في بيئة تربوية متميزة.">
+<meta property="og:image" content="<?php echo e(asset('images/Logo.png')); ?>">
+<meta property="og:url" content="https://alresalah-school.net">
+<meta property="og:type" content="website">
+
+<!-- ✅ أيقونة المتصفح -->
+<link rel="icon" href="<?php echo e(asset('images/Logo.png')); ?>" type="image/png">
+
   <title>مدرسة الرسالة - الصفحة الرئيسية</title>
 
   <!-- Bootstrap + AOS + Google Fonts -->
@@ -11,12 +29,29 @@
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
 
   <style>
-    body {
+    * { box-sizing: border-box; }
+
+    html, body {
+      overflow-x: hidden; /* ✅ يمنع التحريك الأفقي */
+      width: 100%;
+      max-width: 100%;
       font-family: 'Cairo', sans-serif;
       color: #333;
       background-color: #fff;
       scroll-behavior: smooth;
-      overflow-x: hidden; /* ✅ يمنع الفراغات الجانبية */
+    }
+
+    /* 🔶 شريط النسخة التجريبية */
+    .beta-banner {
+      background: linear-gradient(90deg, #f28c28, #f5a742);
+      color: white;
+      text-align: center;
+      font-weight: 700;
+      padding: 8px 0;
+      font-size: 14px;
+      letter-spacing: 1px;
+      z-index: 2000;
+      position: relative;
     }
 
     /* 🔸 Navbar */
@@ -24,7 +59,7 @@
       background: transparent;
       position: absolute;
       width: 100%;
-      z-index: 10;
+      z-index: 1000;
     }
     .navbar-brand {
       font-weight: 700;
@@ -73,9 +108,7 @@
       height: 38px;
       object-fit: contain;
     }
-    .logo-bg:hover {
-      transform: scale(1.1);
-    }
+    .logo-bg:hover { transform: scale(1.1); }
     .brand-text {
       font-size: 1.2rem;
       color: #fff;
@@ -89,7 +122,7 @@
       padding: 200px 20px 150px;
       position: relative;
       overflow: hidden;
-      width: 100vw; /* ✅ عرض كامل للشاشة */
+      width: 100%; /* ✅ إصلاح */
     }
     .hero::after {
       content: '';
@@ -111,17 +144,9 @@
       margin-bottom: 30px;
       opacity: 0.95;
     }
-    /* ✅ إصلاح container داخل الـ hero */
-    .hero .container {
-      max-width: 100%;
-      width: 100%;
-      padding: 0 15px;
-    }
 
     /* 🔸 Section Style */
-    .section {
-      padding: 100px 0;
-    }
+    .section { padding: 100px 0; }
     .section h2 {
       color: #F28C28;
       font-weight: 700;
@@ -136,10 +161,10 @@
       border-radius: 20px;
       box-shadow: 0 5px 15px rgba(0,0,0,0.1);
       transition: transform 0.4s ease;
+      max-width: 100%; /* ✅ يمنع التمدد */
+      height: auto;
     }
-    .section img:hover {
-      transform: scale(1.03);
-    }
+    .section img:hover { transform: scale(1.03); }
 
     /* 🔸 Contact Section */
     .contact-section {
@@ -147,7 +172,7 @@
       color: #fff;
       padding: 80px 0;
       text-align: center;
-      width: 100vw;
+      width: 100%; /* ✅ إصلاح */
     }
     .contact-section h2 {
       color: #fff;
@@ -168,23 +193,15 @@
       color: white;
       text-align: center;
       padding: 30px 15px;
-      width: 100vw;
+      width: 100%; /* ✅ إصلاح */
     }
 
     /* ✅ Responsive Fixes */
     @media (max-width: 768px) {
-      .hero {
-        padding: 160px 10px 120px;
-      }
-      .hero h1 {
-        font-size: 2rem;
-      }
-      .section {
-        padding: 70px 0;
-      }
-      .contact-box-modern {
-        padding: 30px 20px;
-      }
+      .hero { padding: 160px 10px 120px; }
+      .hero h1 { font-size: 2rem; }
+      .section { padding: 70px 0; }
+      .contact-box-modern { padding: 30px 20px; }
       .navbar-collapse {
         background-color: rgba(255, 255, 255, 0.97);
         position: absolute;
@@ -213,6 +230,11 @@
   </style>
 </head>
 <body>
+
+  <!-- 🔶 شريط النسخة التجريبية -->
+  <div class="beta-banner">
+    🚧 نسخة تجريبية - مدرسة الرسالة لتحفيظ القرآن الكريم 🚧
+  </div>
 
   <!-- 🔹 Navbar -->
   <nav class="navbar navbar-expand-lg">

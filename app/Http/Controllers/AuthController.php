@@ -14,64 +14,62 @@ class AuthController extends Controller
         return view('Login');
     }
 
-    // 🔹 التحقق من بيانات الدخول
     public function login(Request $request)
-    {
-        // التحقق من أن الحقول غير فارغة
-        $request->validate([
-            'username' => 'required',
-            'password' => 'required',
-        ]);
+{
+    // ✅ التحقق من الحقول
+    $request->validate([
+        'username' => 'required',
+        'password' => 'required',
+    ]);
 
-        $username = trim($request->input('username'));
-        $password = trim($request->input('password'));
+    $username = trim($request->input('username'));
+    $password = trim($request->input('password'));
 
-        // المستخدمين التجريبيين
-        $users = [
-            'bus' => [
-                'password' => 'bus123',
-                'redirect' => 'dashboard'
-            ],
-            'finance' => [
-                'password' => 'finance123',
-                'redirect' => 'financial.dashboard'
-            ],
-            'admin' => [
-                'password' => 'admin123',
-                'redirect' => 'admin.dashboard'
-            ],
-        ];
+    // ✅ المستخدمين التجريبيين
+    $users = [
+        'bus' => [
+            'password' => 'bus123',
+            'redirect' => 'dashboard'
+        ],
+        'finance' => [
+            'password' => 'finance123',
+            'redirect' => 'financial.dashboard'
+        ],
+        'admin' => [
+            'password' => 'admin123',
+            'redirect' => 'admin.dashboard'
+        ],
+    ];
 
+    foreach ($users as $key => $user) {
+        if ($username === $key && $password === $user['password']) {
 
-        
+            // 🟢 حفظ بيانات الجلسة
+            $request->session()->put('logged_in', true);
+            $request->session()->put('username', $username);
+            $request->session()->put('role', $key);
 
-        foreach ($users as $key => $user) {
-            if ($username === $key && $password === $user['password']) {
-                
+            // 🟢 تسجيل النشاط
+            \App\Models\LoginActivity::create([
+                'username' => $username,
+                'ip_address' => $request->ip(),
+                'login_time' => now(),
+            ]);
 
-                // تسجيل الدخول في جدول LoginActivity
-                LoginActivity::create([
-                    'username' => $username,
-                    'ip_address' => $request->ip(),
-                    'login_time' => now(),
-                ]);
-
-                // التوجيه
-                if (Route::has($user['redirect'])) {
-                    return redirect()->route($user['redirect']);
-                } else {
-                    return back()->with('error', '⚠️ لم يتم العثور على الصفحة المطلوبة. تحقق من المسار.');
-                }
-            }
+            // 🟢 التوجيه للصفحة الصحيحة
+            return redirect()->route($user['redirect']);
         }
-
-        return back()->with('error', '❌ اسم المستخدم أو كلمة المرور غير صحيحة');
     }
+
+    return back()->with('error', '❌ اسم المستخدم أو كلمة المرور غير صحيحة');
+}
 
     // 🔹 تسجيل الخروج
-    public function logout(Request $request)
-    {
-        $request->session()->flush();
-        return redirect()->route('login');
-    }
+   public function logout(Request $request)
+{
+    $request->session()->forget(['logged_in', 'username', 'role']);
+    $request->session()->flush();
+    return redirect()->route('login');
+}
+
 }

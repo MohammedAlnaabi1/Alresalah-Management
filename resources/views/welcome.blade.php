@@ -3,6 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- ✅ SEO معلومات عامة -->
+<meta name="description" content="مدرسة الرسالة لتحفيظ القرآن الكريم - تعليم وتربية على منهج القرآن في بيئة تربوية متميزة.">
+<meta name="keywords" content="مدرسة الرسالة, تحفيظ القرآن, مدارس عمان, تعليم القرآن, الرسالة العامرات">
+<meta name="author" content="مدرسة الرسالة">
+
+<!-- ✅ العنوان الظاهر في محركات البحث -->
+<title>مدرسة الرسالة لتحفيظ القرآن الكريم</title>
+
+<!-- ✅ لجوجل وسوشيال ميديا -->
+<meta property="og:title" content="مدرسة الرسالة لتحفيظ القرآن الكريم">
+<meta property="og:description" content="تعليم وتربية على منهج القرآن في بيئة تربوية متميزة.">
+<meta property="og:image" content="{{ asset('images/Logo.png') }}">
+<meta property="og:url" content="https://alresalah-school.net">
+<meta property="og:type" content="website">
+
+<!-- ✅ أيقونة المتصفح -->
+<link rel="icon" href="{{ asset('images/Logo.png') }}" type="image/png">
+
   <title>مدرسة الرسالة - الصفحة الرئيسية</title>
 
   <!-- Bootstrap + AOS + Google Fonts -->

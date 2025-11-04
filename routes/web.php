@@ -16,9 +16,6 @@ use App\Http\Controllers\ContactController;
 |--------------------------------------------------------------------------
 | Web Routes - نظام إدارة مدرسة الرسالة
 |--------------------------------------------------------------------------
-| يحتوي هذا الملف على جميع المسارات الخاصة بالنظام
-| وتمت إضافة Middleware للأجزاء المحمية (الإدارة / المالية / الحافلات)
-|
 */
 
 // ====================================================================
@@ -41,16 +38,15 @@ Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // ====================================================================
-// 🔒 المسارات المحمية بالـ Middleware
+// 🔒 المسارات المحمية - لا يمكن الدخول إلا بعد تسجيل الدخول
 // ====================================================================
-
+Route::middleware(['checkLogin'])->group(function () {
 
     // لوحة تحكم الأدمن
     Route::get('/admin', [AdminController::class, 'index'])->name('admin.dashboard');
 
     // النظام المالي
     Route::prefix('financial')->group(function () {
-
         Route::get('/', [FinancialController::class, 'index'])->name('financial.dashboard');
 
         Route::get('/revenues', [RevenueController::class, 'index'])->name('financial.revenues');
@@ -88,3 +84,4 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
         Route::get('/operations', [App\Http\Controllers\BusOperationsController::class, 'index'])->name('bus.operations');
     });
 
+});
