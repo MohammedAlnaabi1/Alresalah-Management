@@ -4,9 +4,19 @@
 
 @section('content')
 <div class="card p-4 shadow-sm">
-  <h4 class="text-center text-primary mb-4">
-    <i class="bi bi-cash-coin me-2"></i> إدارة الإيرادات
-  </h4>
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="text-primary m-0">
+      <i class="bi bi-cash-coin me-2"></i> إدارة الإيرادات
+    </h4>
+    <div>
+      <a href="{{ route('financial.revenues.exportPDF', request()->all()) }}" class="btn btn-outline-danger btn-sm">
+        <i class="bi bi-file-earmark-pdf me-1"></i> تصدير PDF
+      </a>
+      <a href="{{ route('financial.revenues.exportExcel', request()->all()) }}" class="btn btn-outline-success btn-sm">
+        <i class="bi bi-file-earmark-excel me-1"></i> تصدير Excel
+      </a>
+    </div>
+  </div>
 
   {{-- ✅ رسالة النجاح --}}
   @if(session('success'))

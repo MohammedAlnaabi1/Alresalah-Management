@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-  <title>التقرير المالي - مدرسة الرسالة</title>
+  <title>تقرير المصروفات - مدرسة الرسالة</title>
   <style>
     body {
       font-family: DejaVu Sans, sans-serif;
@@ -12,57 +12,47 @@
       color: #333;
       margin: 30px;
     }
-
     header {
       text-align: center;
-      border-bottom: 2px solid #0d6efd;
+      border-bottom: 2px solid #dc3545;
       padding-bottom: 10px;
       margin-bottom: 20px;
     }
-
     header h2 {
       font-size: 22px;
-      color: #0d6efd;
+      color: #dc3545;
       margin: 0;
     }
-
     table {
       width: 100%;
       border-collapse: collapse;
       margin-top: 15px;
     }
-
     th, td {
       border: 1px solid #ddd;
       padding: 8px;
       font-size: 13px;
       text-align: center;
     }
-
     th {
-      background-color: #f1f1f1;
+      background-color: #f8d7da;
       color: #000;
     }
-
     tr:nth-child(even) {
       background-color: #fafafa;
     }
-
     h3 {
-      color: #0d6efd;
+      color: #dc3545;
       margin-top: 25px;
       text-align: center;
     }
-
     .summary {
       margin-top: 25px;
       text-align: right;
     }
-
     .summary p {
       margin: 5px 0;
     }
-
     footer {
       position: fixed;
       bottom: 10px;
@@ -74,61 +64,50 @@
     }
   </style>
 </head>
-
 <body>
 
-  {{-- الترويسة --}}
   <header>
     <h2>مدرسة الرسالة</h2>
   </header>
 
-  {{-- عنوان التقرير --}}
-  <h3>التقرير المالي للفترة من {{ $from }} إلى {{ $to }}</h3>
-  <p style="font-size: 14px; color: #666; text-align: center;">
-    نوع التقرير:
-    @if($type == 'all') شامل (إيرادات ومصروفات)
-    @elseif($type == 'revenues') إيرادات فقط
-    @elseif($type == 'bus') مصروفات الحافلات فقط
-    @else مصروفات فقط
-    @endif
-  </p>
+  <h3>تقرير المصروفات</h3>
 
-  {{-- الجدول --}}
   <table>
     <thead>
       <tr>
         <th>#</th>
-        <th>النوع</th>
-        <th>الوصف</th>
+        <th>الفئة</th>
+        <th>طريقة الدفع</th>
         <th>المبلغ (ر.ع)</th>
         <th>التاريخ</th>
+        <th>الحافلة</th>
+        <th>ملاحظات</th>
       </tr>
     </thead>
     <tbody>
-      @forelse($transactions as $index => $t)
+      @forelse($expenses as $index => $exp)
         <tr>
           <td>{{ $index + 1 }}</td>
-          <td>{{ $t['type'] }}</td>
-          <td>{{ $t['name'] }}</td>
-          <td>{{ number_format($t['amount'], 2) }}</td>
-          <td>{{ \Carbon\Carbon::parse($t['date'])->format('Y-m-d') }}</td>
+          <td>{{ $exp->category }}</td>
+          <td>{{ $exp->payment_method }}</td>
+          <td>{{ number_format($exp->amount, 2) }}</td>
+          <td>{{ $exp->date instanceof \Carbon\Carbon ? $exp->date->format('Y-m-d') : $exp->date }}</td>
+          <td>{{ $exp->related_bus_id ? 'حافلة رقم ' . $exp->related_bus_id : '-' }}</td>
+          <td>{{ $exp->notes ?? '-' }}</td>
         </tr>
       @empty
         <tr>
-          <td colspan="5">لا توجد بيانات للفترة المحددة</td>
+          <td colspan="7">لا توجد بيانات</td>
         </tr>
       @endforelse
     </tbody>
   </table>
 
-  {{-- الإجماليات --}}
   <div class="summary">
-    <p><strong>إجمالي الإيرادات:</strong> {{ number_format($totalRevenues, 2) }} ر.ع</p>
-    <p><strong>إجمالي المصروفات:</strong> {{ number_format($totalExpenses, 2) }} ر.ع</p>
-    <p><strong>صافي الربح:</strong> {{ number_format($netBalance, 2) }} ر.ع</p>
+    <p><strong>إجمالي المصروفات:</strong> {{ number_format($expenses->sum('amount'), 2) }} ر.ع</p>
+    <p><strong>عدد السجلات:</strong> {{ $expenses->count() }}</p>
   </div>
 
-  {{-- التذييل --}}
   <footer>
     <p>نظام إدارة مدرسة الرسالة | {{ now()->format('Y-m-d') }}</p>
   </footer>

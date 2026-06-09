@@ -10,9 +10,17 @@
     <h5 class="fw-bold text-secondary m-0">
       <i class="bi bi-wallet2 text-danger me-2"></i> إدارة المصروفات
     </h5>
-    <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#addExpenseModal">
-      <i class="bi bi-plus-circle me-1"></i> إضافة مصروف جديد
-    </button>
+    <div>
+      <a href="{{ route('financial.expenses.exportPDF', request()->all()) }}" class="btn btn-outline-danger btn-sm">
+        <i class="bi bi-file-earmark-pdf me-1"></i> تصدير PDF
+      </a>
+      <a href="{{ route('financial.expenses.exportExcel', request()->all()) }}" class="btn btn-outline-success btn-sm">
+        <i class="bi bi-file-earmark-excel me-1"></i> تصدير Excel
+      </a>
+      <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#addExpenseModal">
+        <i class="bi bi-plus-circle me-1"></i> إضافة مصروف جديد
+      </button>
+    </div>
   </div>
 
  <form method="GET" action="{{ route('financial.expenses') }}" class="row g-3 mb-4 p-3 bg-light rounded shadow-sm">

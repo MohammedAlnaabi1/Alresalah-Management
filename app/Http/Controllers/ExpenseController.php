@@ -4,8 +4,11 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Expense;
-use App\Models\BusExpense; // 🔹 جدول مصروفات الحافلات
+use App\Models\BusExpense;
 use Illuminate\Support\Facades\Storage;
+use App\Exports\ExpenseExport;
+use Maatwebsite\Excel\Facades\Excel;
+use Mpdf\Mpdf;
 
 class ExpenseController extends Controller
 {
@@ -172,5 +175,74 @@ Expense::create($data);
         $busExpense->save();
 
         return redirect()->route('financial.expenses')->with('success', 'تم رفض مصروف الحافلة ❌');
+    }
+
+    // ==========================================================
+    // 🔹 تصدير المصروفات PDF
+    // ==========================================================
+    public function exportPDF(Request $request)
+    {
+        $expenses = $this->getFilteredExpenses($request);
+
+        $html = view('financial.export_expenses_pdf', compact('expenses'))->render();
+
+        $mpdf = new Mpdf([
+            'mode' => 'utf-8',
+            'format' => 'A4',
+            'autoArabic' => true,
+            'autoLangToFont' => true,
+            'default_font' => 'XBRiyaz',
+            'tempDir' => storage_path('app/mpdf-temp'),
+        ]);
+
+        $mpdf->SetDirectionality('rtl');
+        $mpdf->WriteHTML($html);
+
+        return response($mpdf->Output('', 'S'), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="expenses-report.pdf"',
+        ]);
+    }
+
+    // ==========================================================
+    // 🔹 تصدير المصروفات Excel
+    // ==========================================================
+    public function exportExcel(Request $request)
+    {
+        $expenses = $this->getFilteredExpenses($request);
+
+        $fileName = 'expenses-report-' . now()->format('Y-m-d') . '.xlsx';
+        $filePath = 'exports/' . $fileName;
+
+        Excel::store(new ExpenseExport($expenses), $filePath, 'local');
+
+        $fullPath = storage_path('app/' . $filePath);
+
+        return response()->download($fullPath, $fileName, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ])->deleteFileAfterSend(true);
+    }
+
+    // ==========================================================
+    // 🔹 جلب المصروفات مع الفلتر
+    // ==========================================================
+    private function getFilteredExpenses(Request $request)
+    {
+        $query = Expense::query();
+
+        if ($request->filled('category')) {
+            $query->whereRaw("LOWER(category) LIKE ?", ['%' . strtolower($request->category) . '%']);
+        }
+        if ($request->filled('related_bus_id')) {
+            $query->where('related_bus_id', $request->related_bus_id);
+        }
+        if ($request->filled('date_from')) {
+            $query->whereDate('date', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('date', '<=', $request->date_to);
+        }
+
+        return $query->orderBy('date', 'desc')->get();
     }
 }

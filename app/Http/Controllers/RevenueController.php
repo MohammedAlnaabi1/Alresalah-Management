@@ -4,13 +4,31 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Revenue;
+use App\Exports\RevenueExport;
+use Maatwebsite\Excel\Facades\Excel;
+use Mpdf\Mpdf;
 
 class RevenueController extends Controller
 {
     // 🔹 عرض كل الإيرادات
-    public function index()
+    public function index(Request $request)
     {
-        $revenues = Revenue::orderBy('date', 'desc')->get();
+        $query = Revenue::query();
+
+        if ($request->filled('source')) {
+            $query->where('source', 'like', '%' . $request->source . '%');
+        }
+        if ($request->filled('type')) {
+            $query->where('type', 'like', '%' . $request->type . '%');
+        }
+        if ($request->filled('from_date')) {
+            $query->whereDate('date', '>=', $request->from_date);
+        }
+        if ($request->filled('to_date')) {
+            $query->whereDate('date', '<=', $request->to_date);
+        }
+
+        $revenues = $query->orderBy('date', 'desc')->get();
         return view('financial.revenues', compact('revenues'));
     }
 
@@ -91,5 +109,74 @@ class RevenueController extends Controller
         ], 500);
     }
 }
+
+    // ==========================================================
+    // 🔹 تصدير الإيرادات PDF
+    // ==========================================================
+    public function exportPDF(Request $request)
+    {
+        $revenues = $this->getFilteredRevenues($request);
+
+        $html = view('financial.export_revenues_pdf', compact('revenues'))->render();
+
+        $mpdf = new Mpdf([
+            'mode' => 'utf-8',
+            'format' => 'A4',
+            'autoArabic' => true,
+            'autoLangToFont' => true,
+            'default_font' => 'XBRiyaz',
+            'tempDir' => storage_path('app/mpdf-temp'),
+        ]);
+
+        $mpdf->SetDirectionality('rtl');
+        $mpdf->WriteHTML($html);
+
+        return response($mpdf->Output('', 'S'), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="revenues-report.pdf"',
+        ]);
+    }
+
+    // ==========================================================
+    // 🔹 تصدير الإيرادات Excel
+    // ==========================================================
+    public function exportExcel(Request $request)
+    {
+        $revenues = $this->getFilteredRevenues($request);
+
+        $fileName = 'revenues-report-' . now()->format('Y-m-d') . '.xlsx';
+        $filePath = 'exports/' . $fileName;
+
+        Excel::store(new RevenueExport($revenues), $filePath, 'local');
+
+        $fullPath = storage_path('app/' . $filePath);
+
+        return response()->download($fullPath, $fileName, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ])->deleteFileAfterSend(true);
+    }
+
+    // ==========================================================
+    // 🔹 جلب الإيرادات مع الفلتر
+    // ==========================================================
+    private function getFilteredRevenues(Request $request)
+    {
+        $query = Revenue::query();
+
+        if ($request->filled('source')) {
+            $query->where('source', 'like', '%' . $request->source . '%');
+        }
+        if ($request->filled('type')) {
+            $query->where('type', 'like', '%' . $request->type . '%');
+        }
+        if ($request->filled('from_date')) {
+            $query->whereDate('date', '>=', $request->from_date);
+        }
+        if ($request->filled('to_date')) {
+            $query->whereDate('date', '<=', $request->to_date);
+        }
+
+        return $query->orderBy('date', 'desc')->get();
+    }
 
 }

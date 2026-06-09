@@ -10,6 +10,9 @@ use Carbon\Carbon;
 use App\Exports\FinancialReportExport;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\DB;
+use Mpdf\Mpdf;
+use Mpdf\Config\ConfigVariables;
+use Mpdf\Config\FontVariables;
 
 
 class FinancialController extends Controller
@@ -273,9 +276,24 @@ public function exportPDF(Request $request)
 
     $data = $this->generateReportData($from, $to, $type);
 
-    \PDF::setOptions(['defaultFont' => 'Cairo']);
-    $pdf = \PDF::loadView('financial.export_pdf', $data)->setPaper('a4', 'portrait');
-    return $pdf->download('التقرير-المالي.pdf');
+    $html = view('financial.export_pdf', $data)->render();
+
+    $mpdf = new Mpdf([
+        'mode' => 'utf-8',
+        'format' => 'A4',
+        'autoArabic' => true,
+        'autoLangToFont' => true,
+        'default_font' => 'XBRiyaz',
+        'tempDir' => storage_path('app/mpdf-temp'),
+    ]);
+
+    $mpdf->SetDirectionality('rtl');
+    $mpdf->WriteHTML($html);
+
+    return response($mpdf->Output('', 'S'), 200, [
+        'Content-Type' => 'application/pdf',
+        'Content-Disposition' => 'attachment; filename="financial-report.pdf"',
+    ]);
 }
 
 // ==========================================================
@@ -288,7 +306,18 @@ public function exportExcel(Request $request)
     $type = $request->input('type', 'all');
 
     $data = $this->generateReportData($from, $to, $type);
-    return Excel::download(new FinancialReportExport($data), 'التقرير-المالي.xlsx');
+
+    $fileName = 'financial-report-' . now()->format('Y-m-d') . '.xlsx';
+    $filePath = 'exports/' . $fileName;
+
+    // حفظ الملف أولاً ثم تحميله
+    Excel::store(new FinancialReportExport($data), $filePath, 'local');
+
+    $fullPath = storage_path('app/' . $filePath);
+
+    return response()->download($fullPath, $fileName, [
+        'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    ])->deleteFileAfterSend(true);
 }
 
 // ==========================================================

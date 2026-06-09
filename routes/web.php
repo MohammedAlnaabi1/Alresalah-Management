@@ -53,11 +53,15 @@ Route::middleware(['checkLogin'])->group(function () {
         Route::post('/revenues/store', [RevenueController::class, 'store'])->name('financial.revenues.store');
         Route::delete('/revenues/delete/{id}', [RevenueController::class, 'destroy'])->name('financial.revenues.delete');
         Route::post('/revenues/update/{id}', [RevenueController::class, 'update'])->name('financial.revenues.update');
+        Route::get('/revenues/export-pdf', [RevenueController::class, 'exportPDF'])->name('financial.revenues.exportPDF');
+        Route::get('/revenues/export-excel', [RevenueController::class, 'exportExcel'])->name('financial.revenues.exportExcel');
 
         Route::get('/expenses', [ExpenseController::class, 'index'])->name('financial.expenses');
         Route::post('/expenses/store', [ExpenseController::class, 'store'])->name('financial.expenses.store');
         Route::delete('/expenses/delete/{id}', [ExpenseController::class, 'destroy'])->name('financial.expenses.delete');
         Route::post('/expenses/update/{id}', [ExpenseController::class, 'update'])->name('financial.expenses.update');
+        Route::get('/expenses/export-pdf', [ExpenseController::class, 'exportPDF'])->name('financial.expenses.exportPDF');
+        Route::get('/expenses/export-excel', [ExpenseController::class, 'exportExcel'])->name('financial.expenses.exportExcel');
 
         Route::get('/reports', [FinancialController::class, 'reports'])->name('financial.reports');
         Route::get('/reports/filter', [FinancialController::class, 'filterReports'])->name('financial.reports.filter');
@@ -67,6 +71,8 @@ Route::middleware(['checkLogin'])->group(function () {
         Route::get('/bus-expenses/approve/{id}', [FinancialController::class, 'approveBusExpense'])->name('financial.bus_expenses.approve');
         Route::get('/bus-expenses/reject/{id}', [FinancialController::class, 'rejectBusExpense'])->name('financial.bus_expenses.reject');
     });
+
+    
 
     // نظام إدارة الحافلات
     Route::prefix('bus')->group(function () {
