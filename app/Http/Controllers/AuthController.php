@@ -39,6 +39,14 @@ class AuthController extends Controller
             'password' => 'admin123',
             'redirect' => 'admin.dashboard'
         ],
+        'alresalah' => [
+            'password' => 'alresalah123',
+            'redirect' => 'admin.dashboard'
+        ],
+        'alrs' => [
+            'password' => 'alrs123',
+            'redirect' => 'student.dashboard'
+        ],
     ];
 
     foreach ($users as $key => $user) {

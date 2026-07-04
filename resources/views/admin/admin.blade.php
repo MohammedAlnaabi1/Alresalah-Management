@@ -106,6 +106,9 @@
         <div class="card p-3"><h6>عدد الحافلات</h6><h3>{{ $busCount }}</h3></div>
       </div>
       <div class="col-md-2 mb-3">
+        <div class="card p-3"><h6>عدد الطلاب</h6><h3 class="text-info">{{ $studentCount }}</h3></div>
+      </div>
+      <div class="col-md-2 mb-3">
         <div class="card p-3"><h6>صافي الربح</h6><h3 class="{{ $netProfit >= 0 ? 'text-success' : 'text-danger' }}">{{ number_format($netProfit,2) }} ر.ع</h3></div>
       </div>
     </div>
@@ -174,6 +177,7 @@
       <a href="{{ route('financial.dashboard') }}" class="btn btn-warning m-2"><i class="bi bi-wallet2 me-1"></i> الإدارة المالية</a>
       <a href="{{ route('dashboard') }}" class="btn btn-primary m-2"><i class="bi bi-bus-front me-1"></i> إدارة الحافلات</a>
       <a href="{{ route('bus.operations') }}" class="btn btn-success m-2"><i class="bi bi-gear me-1"></i> الصيانة والوقود</a>
+      <a href="{{ route('student.dashboard') }}" class="btn btn-info m-2"><i class="bi bi-people me-1"></i> إدارة الطلاب</a>
     </div>
 
     {{-- 🔹 قسم رسائل الزوار --}}

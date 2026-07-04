@@ -10,6 +10,7 @@ use App\Models\Expense;
 use App\Models\LoginActivity;
 use Carbon\Carbon;
 use App\Models\Contact;
+use App\Models\Student;
 
 
 class AdminController extends Controller
@@ -22,6 +23,8 @@ class AdminController extends Controller
         $totalRevenues = Revenue::sum('amount');
         $totalExpenses = Expense::sum('amount');
         $netProfit = $totalRevenues - $totalExpenses;
+
+        $studentCount = Student::count();
 
         $logins = LoginActivity::latest()->take(10)->get();
         $recentRevenues = Revenue::latest()->take(5)->get();
@@ -75,7 +78,7 @@ $notifications = $notifications->sortByDesc('time')->take(10);
 
 
         return view('admin.admin', compact(
-    'loginCount', 'userCount', 'busCount', 'totalRevenues', 'totalExpenses',
+    'loginCount', 'userCount', 'busCount', 'studentCount', 'totalRevenues', 'totalExpenses',
     'netProfit', 'logins', 'recentRevenues', 'recentExpenses',
     'months', 'revenuesData', 'expensesData', 'notifications', 'contacts'
 ));

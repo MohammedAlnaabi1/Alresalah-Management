@@ -151,15 +151,15 @@
 <body>
 
   <div class="login-box">
-    <img src="{{ asset('images/Logo.png') }}" alt="شعار المؤسسة" class="login-logo">
+    <img src="<?php echo e(asset('images/Logo.png')); ?>" alt="شعار المؤسسة" class="login-logo">
     <h3 class="text-center text-warning mb-4">تسجيل الدخول</h3>
 
-    @if(session('error'))
-      <div class="alert alert-danger">{{ session('error') }}</div>
-    @endif
+    <?php if(session('error')): ?>
+      <div class="alert alert-danger"><?php echo e(session('error')); ?></div>
+    <?php endif; ?>
 
-    <form action="{{ route('login.submit') }}" method="POST">
-      @csrf
+    <form action="<?php echo e(route('login.submit')); ?>" method="POST">
+      <?php echo csrf_field(); ?>
       <div class="mb-3">
         <input type="text" name="username" class="form-control" placeholder="اسم المستخدم" required>
       </div>
@@ -191,3 +191,4 @@
 
 </body>
 </html>
+<?php /**PATH C:\xampp\htdocs\Alresalah-Managment\resources\views/Login.blade.php ENDPATH**/ ?>

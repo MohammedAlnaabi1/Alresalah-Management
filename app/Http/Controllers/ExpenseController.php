@@ -17,7 +17,7 @@ class ExpenseController extends Controller
     // ==========================================
     public function index(Request $request)
 {
-    $query = Expense::query();
+    $query = Expense::with('bus');
 
     // ✅ فلتر نوع المصروف (مثل: رواتب، كهرباء، صيانة، وقود...)
     if ($request->filled('category')) {
@@ -228,7 +228,7 @@ Expense::create($data);
     // ==========================================================
     private function getFilteredExpenses(Request $request)
     {
-        $query = Expense::query();
+        $query = Expense::with('bus');
 
         if ($request->filled('category')) {
             $query->whereRaw("LOWER(category) LIKE ?", ['%' . strtolower($request->category) . '%']);

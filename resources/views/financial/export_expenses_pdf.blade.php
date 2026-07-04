@@ -92,7 +92,7 @@
           <td>{{ $exp->payment_method }}</td>
           <td>{{ number_format($exp->amount, 2) }}</td>
           <td>{{ $exp->date instanceof \Carbon\Carbon ? $exp->date->format('Y-m-d') : $exp->date }}</td>
-          <td>{{ $exp->related_bus_id ? 'حافلة رقم ' . $exp->related_bus_id : '-' }}</td>
+          <td>{{ $exp->related_bus_id ? 'حافلة رقم ' . ($exp->bus->bus_number ?? $exp->related_bus_id) : '-' }}</td>
           <td>{{ $exp->notes ?? '-' }}</td>
         </tr>
       @empty

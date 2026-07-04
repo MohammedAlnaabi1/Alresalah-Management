@@ -11,6 +11,10 @@ use App\Http\Controllers\FinancialController;
 use App\Http\Controllers\RevenueController;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\StudentDashboardController;
+use App\Http\Controllers\StudentController;
+use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\GradeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -73,6 +77,34 @@ Route::middleware(['checkLogin'])->group(function () {
     });
 
     
+
+    // نظام إدارة الطلاب
+    Route::prefix('student')->group(function () {
+        Route::get('/dashboard', [StudentDashboardController::class, 'index'])->name('student.dashboard');
+        Route::get('/honors', [StudentDashboardController::class, 'honors'])->name('student.honors');
+        Route::get('/points', [StudentDashboardController::class, 'points'])->name('student.points');
+        Route::post('/points/store', [StudentDashboardController::class, 'storePoints'])->name('student.points.store');
+
+        Route::get('/', [StudentController::class, 'index'])->name('student.index');
+        Route::post('/store', [StudentController::class, 'store'])->name('student.store');
+        Route::post('/update/{id}', [StudentController::class, 'update'])->name('student.update');
+        Route::delete('/delete/{id}', [StudentController::class, 'destroy'])->name('student.delete');
+        Route::get('/export-pdf', [StudentController::class, 'exportPDF'])->name('student.exportPDF');
+        Route::get('/export-excel', [StudentController::class, 'exportExcel'])->name('student.exportExcel');
+
+        Route::get('/attendance', [AttendanceController::class, 'index'])->name('student.attendance');
+        Route::get('/attendance/report', [AttendanceController::class, 'report'])->name('student.attendance.report');
+        Route::post('/attendance/store', [AttendanceController::class, 'store'])->name('student.attendance.store');
+        Route::get('/attendance/export-pdf', [AttendanceController::class, 'exportPDF'])->name('student.attendance.exportPDF');
+        Route::get('/attendance/export-excel', [AttendanceController::class, 'exportExcel'])->name('student.attendance.exportExcel');
+
+        Route::get('/grades', [GradeController::class, 'index'])->name('student.grades');
+        Route::post('/grades/store', [GradeController::class, 'store'])->name('student.grades.store');
+        Route::post('/grades/update/{id}', [GradeController::class, 'update'])->name('student.grades.update');
+        Route::delete('/grades/delete/{id}', [GradeController::class, 'destroy'])->name('student.grades.delete');
+        Route::get('/grades/export-pdf', [GradeController::class, 'exportPDF'])->name('student.grades.exportPDF');
+        Route::get('/grades/export-excel', [GradeController::class, 'exportExcel'])->name('student.grades.exportExcel');
+    });
 
     // نظام إدارة الحافلات
     Route::prefix('bus')->group(function () {

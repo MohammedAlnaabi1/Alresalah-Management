@@ -138,7 +138,7 @@
               <td>{{ $expense->date->format('Y-m-d') }}</td>
               <td>
                 @if($expense->related_bus_id)
-                  <span class="badge bg-info">حافلة رقم {{ $expense->related_bus_id }}</span>
+                  <span class="badge bg-info">حافلة رقم {{ $expense->bus->bus_number ?? $expense->related_bus_id }}</span>
                 @else
                   <span class="text-muted">-</span>
                 @endif
